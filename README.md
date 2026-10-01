@@ -5,6 +5,10 @@
 바삭 연구소는 내가 고른 이미지를 재료 직접 튀김을 만들고, 완성된 튀김을 3D로 갈라보는 웹앱입니다.
 인터넷에서 이미지 튀기기가 유행하는 것을 보고, 내가 원하는 기능들을 넣은 나만의 버전으로도 만들어보고 싶다는 생각에서 시작한 프로젝트입니다.
 
+**직접 튀겨보기**  https://daybreak365.github.io/fry-anything/
+
+<img width="764" height="632" alt="image" src="https://github.com/user-attachments/assets/346a59b6-ead2-4a6a-8306-46aa7f69035c" />
+
 ## ✨ 주요 기능
 
 | 기능 | 설명 |
