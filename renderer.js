@@ -1,0 +1,30 @@
+'use strict';
+window.FryRenderer=(()=>{
+  const make=(w=1,h=1)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
+  const atlas=new Image();atlas.src='crust-atlas.png';
+  let src=make(),raw=make(),gold=make(),burnt=make(),shell=make(),inside=make();
+  let sourceAlpha,outerDistance,w=1,h=1,type='panko',thickness=3,radius=14,onready=()=>{},modelRevision=0,modelCache=null;
+  const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+  const recipes={tempura:{label:'가벼운 튀김옷',time:8,x:0,y:0,rough:2},panko:{label:'빵가루',time:9,x:1,y:0,rough:4},crispy:{label:'크리스피',time:11,x:0,y:1,rough:7}};
+  function distanceField(alpha,W,H){const d=new Float32Array(W*H),root2=Math.SQRT2;for(let i=0;i<d.length;i++)d[i]=alpha[i]>32?0:1e6;for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(x)d[i]=Math.min(d[i],d[i-1]+1);if(y){d[i]=Math.min(d[i],d[i-W]+1);if(x)d[i]=Math.min(d[i],d[i-W-1]+root2);if(x<W-1)d[i]=Math.min(d[i],d[i-W+1]+root2);}}for(let y=H-1;y>=0;y--)for(let x=W-1;x>=0;x--){const i=y*W+x;if(x<W-1)d[i]=Math.min(d[i],d[i+1]+1);if(y<H-1){d[i]=Math.min(d[i],d[i+W]+1);if(x)d[i]=Math.min(d[i],d[i+W-1]+root2);if(x<W-1)d[i]=Math.min(d[i],d[i+W+1]+root2);}}return d;}
+  function texture(ctx,kind,W,H){if(atlas.complete&&atlas.naturalWidth){const cw=atlas.naturalWidth/2,ch=atlas.naturalHeight/2,rx=kind===3?1:recipes[type].x,ry=kind===3?1:recipes[type].y;const cropW=Math.min(cw,ch*W/H),cropH=Math.min(ch,cw*H/W);ctx.drawImage(atlas,rx*cw+(cw-cropW)/2,ry*ch+(ch-cropH)/2,cropW,cropH,0,0,W,H);}else{ctx.fillStyle=kind===3?'#f5e3bd':'#d79a3b';ctx.fillRect(0,0,W,H);}}
+  function build(){modelRevision++;modelCache=null;if(!sourceAlpha)return;radius=(type==='tempura'?2.5:type==='panko'?4:6)*thickness+2;const sm=shell.getContext('2d'),mask=sm.createImageData(w,h);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x,rough=(Math.sin(x*.53+y*.21)+Math.cos(y*.66-x*.18)+Math.sin(x*.19-y*.31))*.32*recipes[type].rough;const a=Math.max(sourceAlpha[i]/255,clamp(radius+rough-outerDistance[i]));mask.data[i*4]=mask.data[i*4+1]=mask.data[i*4+2]=255;mask.data[i*4+3]=Math.round(a*255);}sm.putImageData(mask,0,0);
+    for(const c of [raw,gold,burnt,inside]){c.width=w;c.height=h;}
+    const g=gold.getContext('2d');texture(g,0,w,h);g.globalCompositeOperation='destination-in';g.drawImage(shell,0,0);g.globalCompositeOperation='source-atop';g.globalAlpha=type==='tempura'?.32:.16;g.filter='sepia(.8) saturate(1.3)';g.drawImage(src,0,0);g.filter='none';g.globalAlpha=1;const light=g.createLinearGradient(0,0,w,h);light.addColorStop(0,'#fff4c132');light.addColorStop(.45,'#ffc76000');light.addColorStop(1,'#5e2c1738');g.fillStyle=light;g.fillRect(0,0,w,h);g.globalCompositeOperation='source-over';
+    const r=raw.getContext('2d');r.drawImage(shell,0,0);r.globalCompositeOperation='source-in';r.fillStyle='#ede0b5';r.fillRect(0,0,w,h);r.globalCompositeOperation='source-atop';r.globalAlpha=.76;r.drawImage(src,0,0);r.globalAlpha=1;r.globalCompositeOperation='source-over';
+    const b=burnt.getContext('2d');b.filter='brightness(.35) saturate(.45) contrast(1.4)';b.drawImage(gold,0,0);b.filter='none';
+    // The filling carries the actual source colours and details. Grain adds only relief.
+    const n=inside.getContext('2d');n.drawImage(src,0,0);n.globalCompositeOperation='multiply';n.globalAlpha=.13;texture(n,3,w,h);n.globalAlpha=1;n.globalCompositeOperation='destination-in';n.drawImage(src,0,0);n.globalCompositeOperation='source-atop';const sheen=n.createLinearGradient(0,0,w,h);sheen.addColorStop(0,'#fffbd30f');sheen.addColorStop(.48,'#ffffff00');sheen.addColorStop(.55,'#fffde910');sheen.addColorStop(1,'#35160812');n.fillStyle=sheen;n.fillRect(0,0,w,h);n.globalCompositeOperation='source-over';
+  }
+  function setSource(image){const base=make(image.width,image.height),b=base.getContext('2d');b.drawImage(image,0,0);const a=b.getImageData(0,0,base.width,base.height).data;let minx=base.width,miny=base.height,maxx=0,maxy=0;for(let y=0;y<base.height;y++)for(let x=0;x<base.width;x++)if(a[(y*base.width+x)*4+3]>10){minx=Math.min(minx,x);miny=Math.min(miny,y);maxx=Math.max(maxx,x);maxy=Math.max(maxy,y);}if(minx>maxx){minx=miny=0;maxx=base.width-1;maxy=base.height-1;}const cw=maxx-minx+1,ch=maxy-miny+1,s=Math.min(1,640/Math.max(cw,ch)),pad=48;w=Math.round(cw*s)+pad*2;h=Math.round(ch*s)+pad*2;src=make(w,h);src.getContext('2d').drawImage(base,minx,miny,cw,ch,pad,pad,w-pad*2,h-pad*2);const pixels=src.getContext('2d').getImageData(0,0,w,h).data;sourceAlpha=new Uint8Array(w*h);for(let i=0;i<sourceAlpha.length;i++)sourceAlpha[i]=pixels[i*4+3];outerDistance=distanceField(sourceAlpha,w,h);shell=make(w,h);build();}
+  function time(){return recipes[type].time+thickness*.9;}
+  function render(seconds,target,kind){const canvas=target.canvas;if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;target.clearRect(0,0,w,h);if(kind==='ice'){target.drawImage(src,0,0);return;}const p=clamp(seconds/time()),burn=clamp((seconds/time()-1.5)/.85);target.save();target.drawImage(raw,0,0);target.globalAlpha=p;target.drawImage(gold,0,0);target.globalAlpha=burn;target.drawImage(burnt,0,0);target.restore();}
+  function getModelData(seconds){
+    if(modelCache?.revision===modelRevision&&modelCache.seconds===seconds)return modelCache;
+    const crust=make(w,h),c=crust.getContext('2d'),burn=clamp((seconds/time()-1.5)/.85);
+    c.filter='brightness('+(1-burn*.65)+') saturate('+(1-burn*.5)+')';texture(c,0,w,h);c.filter='none';c.fillStyle='rgba(238,219,176,'+(1-clamp(seconds/time()))*.8+')';c.fillRect(0,0,w,h);
+    modelCache={width:w,height:h,source:src,shell,crust,filling:inside,thickness,type,seconds,revision:modelRevision};return modelCache;
+  }
+  atlas.onload=()=>{build();onready();};
+  return{setSource,render,getModelData,distanceField,configure(t,n){if(!recipes[t]||!Number.isInteger(n)||n<1||n>5)throw Error('Invalid recipe');type=t;thickness=n;build();},getRecipe:()=>({type,thickness,label:recipes[type].label,targetSeconds:time()}),onReady(fn){onready=fn;}};
+})();

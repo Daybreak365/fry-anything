@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#161817"><meta name="description" content="사진도 밈도 바삭하게. 이미지를 잡고 기름 위에 올려 튀겨 보세요.">
+  <title>바삭 연구소 — 무엇이든 튀겨보세요</title>
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="extras.css"><link rel="stylesheet" href="crispy.css"><script src="background.js" defer></script><script src="renderer.js" defer></script><script src="viewer3d.js" defer></script><script src="app.js" defer></script>
+</head>
+<body>
+<header class="topbar"><a class="brand" href="./" aria-label="바삭 연구소 홈"><span class="brand-mark">B.</span><span>바삭 연구소<small>THE CRISPY LAB</small></span></a><span class="header-note">상상은 자유롭게, 튀김은 바삭하게.</span><button id="sound" class="icon-button" aria-pressed="true"><span id="sound-icon">◖))</span><span id="sound-label">소리 켜짐</span></button></header>
+<main>
+  <div class="page-heading"><div><span class="eyebrow">DEEP FRY PLAYGROUND</span><h1>이것도 튀겨볼까<span>?</span></h1></div><div class="open-label"><span></span>기름 예열 완료</div></div>
+  <section class="workspace" aria-label="이미지 튀김 작업대">
+    <aside class="ingredients">
+      <div class="section-label"><span>01</span><h2>재료 준비</h2></div>
+      <p class="muted">사진, 밈, 그림… 뭐든 좋아요.</p>
+      <button id="upload" class="upload"><span class="upload-icon">＋</span><strong>이미지 불러오기</strong><span>또는 파일을 여기에 놓으세요</span><small>PNG · JPG · WEBP · GIF / 최대 20MB</small></button>
+      <input id="file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+      <label class="remove-option"><input id="remove-bg" type="checkbox"> 불러올 때 배경 제거</label>
+      <button id="edit-bg" class="edit-bg" hidden>현재 이미지 배경 다듬기</button>
+      <div id="error" role="alert"></div>
+      <div class="sample-heading">일단 가볍게 시작해볼까요?</div>
+      <div class="samples"><button data-sample="🥔" data-name="감자" aria-label="감자 선택" class="selected">🥔<span>감자</span></button><button data-sample="🍤" data-name="새우" aria-label="새우 선택">🍤<span>새우</span></button><button data-sample="🧊" data-name="얼음" aria-label="가상 얼음 선택">🧊<span>얼음?!</span></button></div>
+      <fieldset class="recipe"><legend>튀김옷 고르기</legend><label><input type="radio" name="batter" value="tempura"><span><b>가벼운 튀김옷</b><small>얇고 가볍게, 사르르</small></span></label><label><input type="radio" name="batter" value="panko" checked><span><b>바삭한 빵가루</b><small>황금빛 빵가루가 바사삭</small></span></label><label><input type="radio" name="batter" value="crispy"><span><b>두툼한 크리스피</b><small>울퉁불퉁, 제대로 크런치</small></span></label><label class="thickness-label" for="thickness">튀김옷 두께 <output id="thickness-value">3겹</output></label><input id="thickness" type="range" min="1" max="5" step="1" value="3"><div class="range-labels"><span>가볍게</span><span>아주 두툼하게</span></div><p>종류·두께를 바꾸면 처음부터 튀겨요.</p></fieldset>
+      <p class="privacy">이미지는 내 브라우저 안에서만 사용해요.</p>
+    </aside>
+    <div class="cooking-area">
+      <div class="stage-heading"><div class="section-label"><span>02</span><h2>바삭하게 튀기기</h2></div><div class="temperature">180<span>°C</span><i></i></div></div>
+      <div id="arena" class="arena">
+        <div class="rest-spot"><span>재료 대기석</span></div>
+        <div id="fryer" class="fryer"><img src="fryer.png" alt="황금빛 기름이 담긴 스테인리스 튀김기" draggable="false"><div id="hotzone" class="hotzone"></div></div>
+        <div id="stage-hint" class="stage-hint">이미지를 잡고 기름 위로!</div>
+        <div id="food" class="food" role="button" tabindex="0" aria-label="감자. 드래그해 기름 위에 놓거나 스페이스 키를 누르고 있으면 튀겨집니다."><canvas id="food-canvas" width="400" height="400"></canvas><span class="grab-label">잡아보세요 <span>↗</span></span></div>
+        <canvas id="particles" aria-hidden="true"></canvas>
+        <span id="sizzle-word" class="sizzle-word" aria-hidden="true">지글지글!</span>
+        <div id="crumble-message" role="status" hidden><strong>바사삭…</strong><span>너무 바삭해서, 가루가 되어버렸다.</span></div>
+        <div id="explosion-message" class="explosion-message" role="status" hidden><strong>펑!</strong><span>얼음은 튀김이 될 수 없었다…</span><small>이스터에그 발견 🧊 · 다시 튀기기로 돌아가세요</small></div>
+      </div>
+      <div class="stage-controls"><span><span class="key">DRAG</span> 꾹 잡고 기름 위에 머물러보세요</span><button id="hold" class="hold">누르는 동안 튀기기</button></div>
+      <div class="fry-dashboard"><div class="doneness"><span class="tiny-label">바삭한 정도</span><div><strong id="level-label" aria-live="polite">아직 생생해요</strong><span id="percent">0%</span></div><div class="meter" role="progressbar" aria-label="튀김 진행도" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="meter-fill"></div><span></span></div><div class="meter-labels"><span>생재료</span><span>노릇노릇</span><span>바삭!</span><span>앗, 탄다</span></div></div><div class="timer"><span class="tiny-label">튀긴 시간</span><strong><span id="seconds">00.0</span><small>초</small></strong></div><button id="reset" class="reset"><span>↻</span> 다시 튀기기</button></div>
+      <div class="result-row"><span id="recipe-summary">빵가루 3겹 · 노릇해지면 꺼내보세요</span><button id="inspect" disabled>확대 · 단면 보기 <span>↗</span></button></div>
+    </div>
+  </section>
+  <footer><span>세상 모든 이미지에, 바삭함 한 스푼.</span><span>진짜 튀김기에는 음식만 넣어주세요 :)</span></footer>
+</main>
+<dialog id="bg-dialog" class="bg-dialog" aria-labelledby="bg-title">
+  <div class="bg-heading"><div><span class="eyebrow">INGREDIENT PREP</span><h2 id="bg-title">배경을 빼고, 재료만 쏙.</h2></div><button id="bg-close" aria-label="배경 제거 취소">×</button></div>
+  <p class="bg-help">복잡한 배경은 남길 곳과 지울 곳을 조금씩 칠한 뒤 <b>스마트 분리</b>를 누르세요.</p>
+  <div class="bg-smart-tools"><button id="bg-keep" aria-pressed="false">＋ 남길 곳 표시</button><button id="bg-remove-mark" aria-pressed="false">− 지울 곳 표시</button><button id="bg-smart">스마트 분리</button><button id="bg-clear-marks">표시 지우기</button></div>
+  <div class="bg-toolbar"><button id="bg-auto">단색 배경 자동 제거</button><button id="bg-click" aria-pressed="true">클릭 지우기</button><button id="bg-brush" aria-pressed="false">지우개</button><button id="bg-recover" aria-pressed="false">복구 붓</button><button id="bg-undo" disabled>되돌리기</button><button id="bg-restore">원본으로</button></div>
+  <div class="bg-settings"><label id="bg-tolerance-label">색상 허용 범위 <input id="bg-tolerance" type="range" min="5" max="100" value="30"><output id="bg-tolerance-value">30</output></label><label id="bg-brush-label" hidden>지우개 크기 <input id="bg-brush-size" type="range" min="5" max="100" value="35"><output id="bg-brush-value">35</output></label></div>
+  <div class="bg-canvas-wrap"><canvas id="bg-preview" tabindex="0" aria-label="배경 제거 미리보기. 지울 배경을 클릭하세요."></canvas></div>
+  <div class="bg-edge-row"><label>가장자리 부드럽게 <input id="bg-feather" type="range" min="0" max="3" step="0.5" value="0.5"><output id="bg-feather-value">0.5px</output></label><button id="bg-before" aria-pressed="false">원본 비교</button></div>
+  <p id="bg-status" role="status">체크무늬로 보이는 곳은 투명한 영역이에요.</p>
+  <div class="bg-actions"><button id="bg-cancel">취소</button><button id="bg-apply">이 이미지로 튀기기</button></div>
+</dialog>
+<dialog id="inspect-dialog" class="inspect-dialog" aria-labelledby="inspect-title"><div class="inspect-heading"><div><span class="eyebrow">CRISPY IN 3D</span><h2 id="inspect-title">겉은 바삭, 속은?</h2><p id="inspect-meta"></p></div><button id="inspect-close" aria-label="확대 화면 닫기">×</button></div><div class="inspect-tools"><button id="cut" aria-pressed="false">반으로 가르기</button><button id="view-reset">시점 초기화</button><label for="section-mode">단면 모드 <select id="section-mode" aria-describedby="section-mode-help"><option value="line" selected>절단선 색상</option><option value="image">이미지 펼치기</option></select></label><label>확대 <input id="inspect-zoom" type="range" min="1" max="3" step="0.25" value="1"><output id="zoom-value">1×</output></label><label id="cut-position-control" hidden>자르는 위치 <input id="cut-position" type="range" min="20" max="80" step="1" value="50"><output id="cut-position-value">50%</output></label><label id="split-control" hidden>벌린 정도 <input id="split-amount" type="range" min="0" max="100" value="100"></label></div><div class="inspect-viewport" id="inspect-viewport"><canvas id="inspect-canvas" width="1100" height="800" tabindex="0" aria-label="3D 튀김. 드래그하거나 방향키로 회전할 수 있습니다."></canvas></div><p id="cut-caption">겉면의 튀김옷을 확대해서 확인해보세요.</p><p id="section-mode-help" class="imagined-note" aria-live="polite">자르는 선 위의 색만 두께 방향으로 쭉 이어 보여요. 자르는 위치를 바꾸면 색도 달라져요.</p><p class="imagined-note">드래그·방향키로 회전하고, 휠로 확대해보세요. 내부는 원본 이미지로 만든 가상 단면이에요.</p></dialog>
+</body></html>
